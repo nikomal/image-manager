@@ -3,10 +3,8 @@
  */
 import React, {Component} from 'react';
 import {Row, Col, Icon, Input, Button} from 'antd';
-import {request} from '../../utils/index';
 import {connect} from 'react-redux';
-import {setUser} from './actions';
-import { bindActionCreators } from 'redux'
+import {userLogin} from './actions';
 
 class Login extends Component {
     constructor(props) {
@@ -31,16 +29,10 @@ class Login extends Component {
 
     submit = () => {
         console.log('send');
-        request('/login', {
-            method: 'post',
-            data: {
-                username: this.state.username,
-                password: this.state.password
-            }
-        }).then((data) => {
-            console.log(data);
-            this.props.setUser(data.user);
-        })
+        this.props.userLogin({
+            username:this.state.username,
+            password:this.state.password
+        });
     };
 
 
@@ -55,7 +47,7 @@ class Login extends Component {
             <Col span={4} offset={5} className="head-size">
                 <div className="login-prompt">
                     <div className="prompt-box">
-                        <h2>登录{this.props.user}</h2>
+                        <h2>登录{!this.props.loading ? this.props.user : '正在登录中...'}</h2>
                         <Input size="large" type="text" placeholder="输入用户名" prefix={<Icon type="user"/>}
                                onChange={this.onUsernameChange}
                         />
@@ -72,16 +64,17 @@ class Login extends Component {
     }
 }
 
-const mapsToProps = (state) => {
+const mapsStateToProps = (state) => {
     return {
-        user: state.user
+        user: state.user.user,
+        loading: state.user.isLoading
     }
 };
 
-const mapsToActions = (dispatch) => {
+const mapsDispatchToProps = (dispatch) => {
     return {
-        setUser:bindActionCreators(setUser,dispatch)
+        userLogin: (user) => dispatch(userLogin(user))
     }
 };
 
-export default connect(mapsToProps,mapsToActions)(Login);
+export default connect(mapsStateToProps, mapsDispatchToProps)(Login);
